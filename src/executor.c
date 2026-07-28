@@ -3,22 +3,43 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../include/executor.h"
+#include "../include/command.h"
+#include <errno.h>
+#include <string.h>
+#include <fcntl.h>
 
-void execute_command(char *argv[]){
-	if (argv[0]==NULL)
+void execute_command(Command* cmd){
+	if (cmd->argv[0]==NULL)
 		return;
 	pid_t pid=fork();
 
 	if(pid<0)
 	{
 		perror("Error creating process!");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if(pid==0){//in child
-		execvp(argv[0], argv);
-		perror("execvp");
-		exit(1);
+		if(cmd->output_file != NULL){
+			int fd = open(cmd->output_file,
+			O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			if(fd < 0){
+				perror("open");
+				exit(EXIT_FAILURE);
+
+			}
+			if(dup2(fd, STDOUT_FILENO) < 0){
+				perror("dup2");
+				close(fd);
+				exit(EXIT_FAILURE);
+			}
+
+			close(fd);
+
+		}
+		execvp(cmd->argv[0], cmd->argv);
+		fprintf(stderr, "%s: %s\n", cmd->argv[0],strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 	//in parent
 	waitpid(pid, NULL, 0);
