@@ -21,8 +21,12 @@ void execute_command(Command* cmd){
 
 	if(pid==0){//in child
 		if(cmd->output_file != NULL){
+			int flags = O_WRONLY | O_CREAT;
+			if(cmd->append)
+				flags |=O_APPEND;
+			else flags |= O_TRUNC;
 			int fd = open(cmd->output_file,
-			O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			flags, 0644);
 			if(fd < 0){
 				perror("open");
 				exit(EXIT_FAILURE);
@@ -36,6 +40,21 @@ void execute_command(Command* cmd){
 
 			close(fd);
 
+		}
+		if (cmd->input_file != NULL){
+			int fd = open(cmd->input_file,
+				       	O_RDONLY, 0644);
+			if(fd<0){
+				perror("open");
+				exit(EXIT_FAILURE);
+			}
+			if(dup2(fd, STDIN_FILENO) < 0){
+				perror("dup2");
+				close(fd);
+				exit(EXIT_FAILURE);
+			}
+			close(fd);
+			
 		}
 		execvp(cmd->argv[0], cmd->argv);
 		fprintf(stderr, "%s: %s\n", cmd->argv[0],strerror(errno));
