@@ -2,6 +2,5 @@
 #define EXECUTOR_H
 #include "command.h"
 
-void execute_command(Command* cmd);
-
+void execute_commands(Command *head);
 #endif

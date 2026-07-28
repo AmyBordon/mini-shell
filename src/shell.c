@@ -22,12 +22,15 @@ void shell_loop(void)
         }
         line[strcspn(line, "\n")] = '\0';
         
-	Command cmd;
+	Command *commands = parse_line(line);
 
-	parse_command(line, &cmd);
-	if(execute_builtin(&cmd))
-		continue;
-	execute_command(&cmd);
+	if (commands == NULL)
+    		continue;
+
+	if (!execute_builtin(commands))
+    		execute_commands(commands);
+
+	free_commands(commands);
     }
     free(line);
 }
