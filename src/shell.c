@@ -14,7 +14,9 @@ void shell_loop(void)
 {
     char* line = NULL;
     size_t len=100;
-    while(1){
+	printf(COLOR_PURPLE "🌸Mini-Shell🌸\n" COLOR_RESET);
+	printf(COLOR_PURPLE "Note: separate operators with spaces (|, <, >, >>).\n" COLOR_RESET);
+    	while(1){
 	printf(COLOR_PINK "🌸>" COLOR_RESET);
         if (getline(&line, &len, stdin) == -1)
         {
